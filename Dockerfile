@@ -3,7 +3,12 @@
 # Copyright (C) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license. See LICENSE.txt in the project root for license information.
 
+# Windows server 2019 (AWS)
 ARG FROM_IMAGE=mcr.microsoft.com/windows:10.0.17763.1039
+
+# Windows Home (for testing)
+#ARG FROM_IMAGE=microsoft/dotnet-framework:3.5-sdk-windowsservercore-1709
+
 FROM ${FROM_IMAGE}
 
 # Reset the shell.
@@ -53,6 +58,11 @@ RUN pip install --upgrade `
     requests `
     git+https://github.com/vcatechnology/colorama@0.4.1-1 `
     junitparser
+
+ADD https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311-binaries.zip C:\TEMP\wix.zip
+RUN powershell.exe -Command "Expand-Archive c:\TEMP\wix.zip -DestinationPath c:\Wix; `
+    $env:PATH = $env:PATH + ';C:\Wix\;'; `
+    [Environment]::SetEnvironmentVariable(\"Path\", $env:Path + ';C:\Wix\;', [EnvironmentVariableTarget]::Machine);"
 
 # Use developer command prompt and start PowerShell if no other command specified.
 ENTRYPOINT ["C:\\BuildTools\\Common7\\Tools\\VsDevCmd.bat", "&&", "powershell.exe", "-NoLogo", "-ExecutionPolicy", "Bypass"]
